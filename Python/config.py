@@ -1,7 +1,7 @@
-
 fields = [
     "Frequency",
     "Word", #Foreign word
+    "Traditional", #The word in traitional chinese script
     "Pronunciation", 
     "Meaning", #Meaning of word
     "Sentence", #Example sentence using the word
