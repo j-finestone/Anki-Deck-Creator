@@ -1,7 +1,7 @@
 #Generate sentance using OpenAI's API.
 import openai
-import csv
 from pathlib import Path
+import config
 
 #get paths
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -11,20 +11,31 @@ CARDS_PATH = BASE_DIR / "Data" / "cards.csv"
 
 
 def generate_sentence():
+
+    #generate prompts
+    core_vocab = []
+
+    target_words = []
+    recent_vocab = []
+    max_clauses = 2
+    
+    system_prompt = config.system_prompt(core_vocab)
+    user_prompt = config.user_prompt(target_words, recent_vocab, max_clauses)
+
     # Set up the OpenAI API client
     client = openai.OpenAI()
+    #request response
     response = client.chat.completions.create (
         model="gpt-5-mini",
         messages = [
             {
                 "role": "system",
-                "content": "",
+                "content": config.system_prompt(),
             },
-
             
             {
                 "role": "user",
-                "content": ""
+                "content": config.user_prompt()
             }
         ],
 
@@ -33,7 +44,7 @@ def generate_sentence():
             "json_schema": {
                 "name":"anki_batch",
                 "strict": True,
-                "schema":{
+                "schema": {
                     "type":"object",
                     "properties": {
                             "entries": { "type": "array", "items": {
@@ -45,7 +56,7 @@ def generate_sentence():
                                     "notes": {"type": "string"},
                                     "breakdown": {"type":"string"}
                                 }, 
-                                "required":["sentence", "sentence_meaning", "notes", "breakdown"],
+                                "required":["rank", "sentence", "sentence_meaning", "notes", "breakdown"],
                                 "additionalProperties": False
                             }
                         }
