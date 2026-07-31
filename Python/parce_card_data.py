@@ -40,11 +40,7 @@ def generate_card_data():
 
 
             #Generate epty feilds for the remaining columns
-            sentence = ""  
-            sentence_pronunciation = ""
-            sentence_meaning = ""
-            notes = ""
-            breakdown = ""
+
 
             #write the data to the CSV file
             writer.writerow([frequency, word, word_traditional, pronunciation, meaning, sentence, sentence_pronunciation, sentence_meaning, notes, breakdown])
@@ -65,4 +61,4 @@ def generate_wordlist():
         f.write(", ".join((full_word_list)))
 
 
-generate_wordlist()
+generate_card_data()

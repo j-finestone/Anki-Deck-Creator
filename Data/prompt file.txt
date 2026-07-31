@@ -1,47 +1,4 @@
-extracted_fields = [
-    "Rank", 
-    "Word", 
-    "Pronunciation", 
-    "Meaning", 
-    
-]
-created_feilds = [
-
-    "Sentence",
-    "Sentence_pronunciation",
-    "Notes",
-    "Breakdown"
-
-
-]
-
-#How long the list of core vocb (the number 1 most common words) can be
-core_vocab_length = 150
-recent_vocab_length = 100
-
-
-#Languages the user already speaks, where the notes can use those as references in its explinations
-reference_languages = ["English", "Spanish", "French", "Hebrew"]
-
-scaffolding_words =  [
-    "猫", "水","苹果","是", "我", "学校", "人"
-]
-
-
-
-
-
-#region prompts
-def system_prompt(core_vocab):
-    """Forms system prompt for the OpenAI API request.
-    Args
-        scaffolding_vocab (list): List of basic content words it is allowed so it can make sentences before content words
-        core (list): List of words that are considered basic vocabulary.
-    Returns
-        str: The system prompt for the OpenAI API request."""
-
-
-    system_prompt = f"""You are generating example sentences for a Simplified Mandarin Chinese
+You are generating example sentences for a Simplified Mandarin Chinese
         frequency-ordered Anki deck. For each target word you receive, produce ONE natural sentence
         where the target word is the only new vocabulary item.
 
@@ -57,7 +14,7 @@ def system_prompt(core_vocab):
         - Notes: only include if there's a real grammar point or a genuine nuance vs.
         a similar word. Leave "" if the meaning is a clean 1:1 gloss. Be concise —
         no filler, no disclaimers about vulgarity beyond one neutral clause if
-        relevant. Reference {reference_languages} parallels when that's
+        relevant. Reference ['English', 'Spanish', 'French', 'Hebrew'] parallels when that's
         more efficient than explaining from scratch.
         - Breakdown: give the meaning of each character/morpheme for compound words.
         Add more detail only where the morpheme split is genuinely illuminating.
@@ -69,21 +26,9 @@ def system_prompt(core_vocab):
         - Output strictly valid JSON matching the provided schema. No prose outside
         JSON.
 
-        CORE_VOCAB: {", ".join(core_vocab)}
-        """
-    return system_prompt
+        CORE_VOCAB: 不, 这, 他, 也, 就, 人, 都, 说, 而, 们, 你, 了, 要, 会, 对, 及, 和, 与, 以, 很, 种, 的, 大, 能, 着, 她, 那, 上, 但, 年, 还, 可以, 最, 自己, 为, 来, 所, 他们, 两, 各, 可, 为, 或, 好, 等, 又, 将, 因为, 于, 由, 从, 更, 被, 才, 已, 者, 每, 次, 把, 三, 什么, 问题, 其, 让, 此, 做, 再, 所以, 只, 则, 台湾, 却, 并, 位, 想, 去, 呢, 学生, 表示, 到, 公司, 将, 如果, 社会, 看, 小, 天, 因此, 新, 但是, 它, 中, 使, 工作, 全, 觉得, 使用, 这些, 里, 并, 由于, 时候, 知道, 这样, 一, 认为, 时间, 事, 过, 向, 可能, 中国, 美国, 到, 和, 几, 系统, 政府, 大家, 国家, 许多, 生活, 跟, 已经, 大学, 研究, 因, 本, 二, 活动, 该, 世界, 应, 四, 希望, 方式, 内, 项, 啊, 下, 环境, 一些, 必须, 文化, 高
+        
+    ALLOWED_VOCAB (recent_vocb): 一, 在, 有, 个, 我
+    MAX_CLAUSES: 2
 
-
-
-#Outputs the user prompt
-def user_prompt (target_words, recent_vocab, max_clauses=2):
-    user_prompt = f"""
-    ALLOWED_VOCAB (recent_vocb): {", ".join(recent_vocab)}
-    MAX_CLAUSES: {max_clauses}
-
-    TARGET_WORDS: {", ".join(target_words)}"""
-    
-    return user_prompt
-
-
-#endregion
+    TARGET_WORDS: 不, 这, 他, 也, 就
