@@ -3,6 +3,7 @@ import openai
 from pathlib import Path
 import config
 import pandas as pd
+import misc_functions
 
 #get paths
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,39 +20,53 @@ def generate_prompts (start, batch_size):
 
     #Load the CSV file into a pandas DataFrame
     df = pd.read_csv(CARDS_PATH)
-    words = df["Word"]
+    words = df[["Word", "Rank"]]
+
+
 
     end_of_batch = start+batch_size
+    
     #Ensure input values are within range
-    if start>len(words) or len(words)<0:
+    if start>len(words["Word"]) or len(words["Word"])<0:
         raise Exception("starting word is out of range of word list")    
-    if config.core_vocab_length > len(words)-1:
+    if config.core_vocab_length > len(words["Word"])-1:
         raise Exception("Word list is too small or could not be found")
-    if start+batch_size>(len(words)-1):
-        end_of_batch = len(words)-1
+    if start+batch_size>(len(words["Word"])-1):
+        end_of_batch = len(words["Word"])-1
 
     #Assign core vocab
-    core_vocab = words[start:config.core_vocab_length]
+    if config.core_vocab_length>end_of_batch:
+        core_vocab = misc_functions.df_to_txt(words, 0, start)
+    else:
+        core_vocab = misc_functions.df_to_txt(words, 0, config.core_vocab_length)
+ 
 
-    #Add suplimental words to the target words list if the batch small
-    if config.core_vocab_length<end_of_batch:
-        core_vocab.append(config.scaffolding_words)
 
-    target_words = words[start:end_of_batch]
+
+    #Add suplimental words to the core_vocab words list if the batch small
+
+    #Target Words
+    target_words = misc_functions.df_to_txt(words, start, end_of_batch)
+ 
+
 
     #Get recent vocab
     if end_of_batch < config.recent_vocab_length:
-        recent_vocab = words[0 : start]
-    else:
-        recent_vocab = words[end_of_batch-config.recent_vocab_length : start-1]
+        recent_vocab = misc_functions.df_to_txt(words, 0, start)
 
-    print (recent_vocab)
+        #Add suplimentry vocab for early words
+        recent_vocab+="\n".join(config.scaffolding_words)
+ 
+    else:
+        recent_vocab = misc_functions.df_to_txt(words, end_of_batch-config.recent_vocab_length, start-1)
+
+
     max_clauses = 2
 
 
     
     system_prompt = config.system_prompt(core_vocab)
-    user_prompt = config.user_prompt(target_words, recent_vocab, max_clauses)
+    user_prompt = config.user_prompt(target_words, recent_vocab, start, max_clauses)
 
     return {"system_prompt": system_prompt, "user_prompt":user_prompt}
 
@@ -115,9 +130,13 @@ def generate_sentence(start, batch_size):
 
 
 if __name__ == "__main__":
-    print("Saving prompts to file...")
     with open (DATA_PATH/"prompt file.txt", "w", encoding="utf-8") as f:
-        prompts = generate_prompts(5, 5)
+        print("Saving prompts to file...")
+        prompts = generate_prompts(50, 10)
         f.writelines(prompts["system_prompt"])
         f.writelines(prompts["user_prompt"])
+
+        #print("Saving response to file...")
+        #generate_output file for json
+        #f.writelines(generate_sentence(25, 5))
     pass
