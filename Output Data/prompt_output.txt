@@ -1,72 +1,5 @@
-from logging import config
-from pathlib import Path
-
-extracted_fields = [
-    "Rank", 
-    "Word", 
-    "Pronunciation"
-    
-]
-created_feilds = [
-
-    "Sentence",
-    "Sentence_pronunciation",
-    "Notes",
-    "Character_info",
-    "Pronunciation"
-
-]
-
-#parameters
-core_vocab_length = 150
-recent_vocab_length = 100
-final_card_count = 20
-
-
-#Technical variable 
-prompt_batch_size = 10
-model="gpt-5-mini"
-reasoning_effort="medium"
-
-
-#File loctions
-BASE_DIR = Path(__file__).resolve().parent.parent
-INPUT_DATA_DIR = BASE_DIR / "Input Data"
-OUTPUT_DATA_DIR = BASE_DIR / "Output Data"
-ORIGINAL_CARDS_PATH = INPUT_DATA_DIR / "cards.csv"
-FREQUENCY_LIST_PATH = INPUT_DATA_DIR / "raw_frequency_list.csv"
-WORDS_LIST_PATH =  INPUT_DATA_DIR / "words_list.txt"
-CHAR_DICT_PATH = INPUT_DATA_DIR / "dictionary.jsonl"
-FIELD_DATA_OUTPUT = OUTPUT_DATA_DIR / "output.csv"
-PROMPT_OUTPUT = OUTPUT_DATA_DIR / "prompt_output.txt"
-
-
-
-#Languages the user already speaks, where the notes can use those as references in its explinations
-reference_languages = ["English", "Spanish", "French", "Hebrew"]
-
-scaffolding_words =  [
-    "猫", "水","苹果","是", "我", "人", "中国"
-]
-
-
-
-
-
-#region prompts
-def system_prompt(core_vocab):
-    """Forms system prompt for the OpenAI API request.
-    Args:
-        core_vocab (list): Highest-frequency words the learner already
-            knows, always allowed. For the first ~130 words this includes
-            merged-in scaffolding words (simple, high-utility words usable
-            before their natural rank); no scaffolding is added past that
-            point — CORE_VOCAB from there on is purely rank-driven.
-    Returns:
-        str: The system prompt for the OpenAI API request.
-    """
-
-    return f"""You are generating example sentences for a Simplified Mandarin Chinese
+System Prompt:
+You are generating example sentences for a Simplified Mandarin Chinese
 frequency-ordered Anki deck, following Krashen's i+1 principle: for each
 target word you receive, produce ONE natural sentence where the target word
 is the only new vocabulary item — everything else must already be
@@ -205,34 +138,148 @@ OUTPUT
 - Output strictly valid JSON matching the provided schema. No prose outside
   JSON.
 
-CORE_VOCAB: {core_vocab}
-"""
+CORE_VOCAB: 1|一|yī
+2|在|zài
+3|有|yǒu
+4|个|gè
+5|我|wǒ
+6|不|bù
+7|这|zhè
+8|他|tā
+9|也|yě
+10|就|jiù
+11|人|rén
+12|都|dōu
+13|说|shuō
+14|而|ér
+15|们|men
+16|你|nǐ
+17|了|le
+18|要|yào
+19|会|huì
+20|对|duì
+21|及|jí
+22|和|hé
+23|与|yǔ
+24|以|yǐ
+25|很|hěn
+26|种|zhǒng
+27|的|de
+28|大|dà
+29|能|néng
+30|着|zhe
+31|她|tā
+32|那|nà
+33|上|shàng
+34|但|dàn
+35|年|nián
+36|还|hái
+37|可以|kěyǐ
+38|最|zuì
+39|自己|zìjǐ
+40|为|wéi
+41|来|lái
+42|所|suǒ
+43|他们|tāmen
+44|两|liǎng
+45|各|gè
+46|可|kě
+47|为|wéi
+48|或|huò
+49|好|hǎo
+50|等|děng
+51|又|yòu
+52|将|jiāng
+53|因为|yīnwèi
+54|于|yú
+55|由|yóu
+56|从|cóng
+57|更|gèng
+58|被|bèi
+59|才|cái
+60|已|yǐ
 
-#Outputs the user prompt
-def user_prompt (target_words, recent_vocab, max_clauses=2):
-    user_prompt = f"""
-    RECENT_VOCAB: \n {recent_vocab}
-    TARGET_WORDS: \n {target_words}
+
+User Prompt:
+
+    RECENT_VOCAB: 
+ 1|一|yī
+2|在|zài
+3|有|yǒu
+4|个|gè
+5|我|wǒ
+6|不|bù
+7|这|zhè
+8|他|tā
+9|也|yě
+10|就|jiù
+11|人|rén
+12|都|dōu
+13|说|shuō
+14|而|ér
+15|们|men
+16|你|nǐ
+17|了|le
+18|要|yào
+19|会|huì
+20|对|duì
+21|及|jí
+22|和|hé
+23|与|yǔ
+24|以|yǐ
+25|很|hěn
+26|种|zhǒng
+27|的|de
+28|大|dà
+29|能|néng
+30|着|zhe
+31|她|tā
+32|那|nà
+33|上|shàng
+34|但|dàn
+35|年|nián
+36|还|hái
+37|可以|kěyǐ
+38|最|zuì
+39|自己|zìjǐ
+40|为|wéi
+41|来|lái
+42|所|suǒ
+43|他们|tāmen
+44|两|liǎng
+45|各|gè
+46|可|kě
+47|为|wéi
+48|或|huò
+49|好|hǎo
+50|等|děng
+51|又|yòu
+52|将|jiāng
+53|因为|yīnwèi
+54|于|yú
+55|由|yóu
+56|从|cóng
+57|更|gèng
+58|被|bèi
+59|才|cái
+60|已|yǐ猫
+水
+苹果
+是
+我
+人
+中国
+    TARGET_WORDS: 
+ 61|者|zhě
+62|每|měi
+63|次|cì
+64|把|bǎ
+65|三|sān
+66|什么|shénme
+67|问题|wèntí
+68|其|qí
+69|让|ràng
+70|此|cǐ
 
     
-    MAX_CLAUSES: {max_clauses}"""
-    
-
-
-    
-    return user_prompt
-
-
-def get_max_clauses(start, batch_size):
-    """Returns the maximum number of clauses to use in a sentence for a given batch of cards using a formula .
-    Args:
-        start (int): The starting index of the batch.
-        batch_size (int): The size of the batch.
-        
-    Returns:
-        int: The maximum number of clauses to use in a sentence for the given batch.
-    """
-    max_clause = 1 + start//40
-
-#endregion
-
+    MAX_CLAUSES: 2

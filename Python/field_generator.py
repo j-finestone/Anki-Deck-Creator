@@ -1,14 +1,12 @@
 #Generate sentance using OpenAI's API.
 import openai
-from pathlib import Path
 import config
 import pandas as pd
 import misc_functions
+import asyncio
 
-#get paths
-BASE_DIR = Path(__file__).resolve().parent.parent
-CARDS_PATH = BASE_DIR / "Data" / "cards.csv"
-DATA_PATH = BASE_DIR / "Data"
+# Set up the OpenAI API client
+client = openai.AsyncOpenAI()
 
 
 def generate_prompts (start, batch_size):
@@ -19,8 +17,8 @@ def generate_prompts (start, batch_size):
 
 
     #Load the CSV file into a pandas DataFrame
-    df = pd.read_csv(CARDS_PATH)
-    words = df[["Word", "Rank"]]
+    df = pd.read_csv(config.ORIGINAL_CARDS_PATH)
+    words = df[["Word", "Rank", "Pronunciation"]]
 
 
 
@@ -66,24 +64,33 @@ def generate_prompts (start, batch_size):
 
     
     system_prompt = config.system_prompt(core_vocab)
-    user_prompt = config.user_prompt(target_words, recent_vocab, start, max_clauses)
+    user_prompt = config.user_prompt(target_words, recent_vocab, max_clauses)
 
     return {"system_prompt": system_prompt, "user_prompt":user_prompt}
 
 
 
 
-def generate_sentence(start, batch_size):
+async def generate_fields(start, batch_size):
 
-    print ("Generating prompts...")
+    """#Bypass this for testing:
+    with open(config.GPT_JSON_OUTPUT_PATH, encoding="utf-8") as f:
+        print ("Outputing prebaked data")
+        return str("\n".join(f.readlines()))"""
+
     prompts = generate_prompts(start, batch_size)
 
-    print("Connecting with ChatGPT...")
-    # Set up the OpenAI API client
-    client = openai.OpenAI()
+    """#Save prompt to file for debuging
+    with open(config.PROMPT_OUTPUT, "w", encoding="utf-8") as f:
+        f.write(f"System Prompt:\n{prompts['system_prompt']}\n\nUser Prompt:\n{prompts['user_prompt']}")
+    return"""
+
+    print(f"Generating fields for {start}-{start+batch_size}...")
+
     #request response
-    response = client.chat.completions.create (
-        model="gpt-5-mini",
+    response = await client.chat.completions.create (
+        model=config.model,
+        reasoning_effort=config.reasoning_effort,
         messages = [
             {
                 "role": "system",
@@ -108,12 +115,12 @@ def generate_sentence(start, batch_size):
                                 "type": "object", 
                                 "properties": {
                                     "rank": {"type": "integer"},
+                                    "meaning": {"type": "string"},
                                     "sentence":{"type": "string"},
                                     "sentence_meaning": {"type": "string"},
                                     "notes": {"type": "string"},
-                                    "breakdown": {"type":"string"}
                                 }, 
-                                "required":["rank", "sentence", "sentence_meaning", "notes", "breakdown"],
+                                "required":["rank", "meaning", "sentence", "sentence_meaning", "notes"],
                                 "additionalProperties": False
                             }
                         }
@@ -124,19 +131,9 @@ def generate_sentence(start, batch_size):
                 }
             }
         )
-    print ("Response recived...")
-    return response.choices[0].message.content
+    print (f"Response recived for {start}-{start+batch_size}...")
+    response = response.choices[0].message.content
+    return response
 
 
 
-if __name__ == "__main__":
-    with open (DATA_PATH/"prompt file.txt", "w", encoding="utf-8") as f:
-        print("Saving prompts to file...")
-        prompts = generate_prompts(50, 10)
-        f.writelines(prompts["system_prompt"])
-        f.writelines(prompts["user_prompt"])
-
-        #print("Saving response to file...")
-        #generate_output file for json
-        #f.writelines(generate_sentence(25, 5))
-    pass
