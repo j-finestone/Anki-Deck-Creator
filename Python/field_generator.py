@@ -85,7 +85,7 @@ async def generate_fields(start, batch_size):
         f.write(f"System Prompt:\n{prompts['system_prompt']}\n\nUser Prompt:\n{prompts['user_prompt']}")
     return"""
 
-    print(f"Generating fields for {start}-{start+batch_size}...")
+    #print(f"Generating fields for {start}-{start+batch_size}...")
 
     #request response
     response = await client.chat.completions.create (
@@ -134,6 +134,5 @@ async def generate_fields(start, batch_size):
     print (f"Response recived for {start}-{start+batch_size}...")
     response = response.choices[0].message.content
     return response
-
 
 

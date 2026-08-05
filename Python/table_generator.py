@@ -12,6 +12,7 @@ def initialize_global_dataframe():
     print ("Initializing data frame...")
     #Make copy of original cards.csv as a dataframe file
     global df_cards
+    #df_cards = pd.read_csv(config.FIELD_DATA_OUTPUT)
     df_cards = pd.read_csv(config.ORIGINAL_CARDS_PATH)
     return df_cards
 
@@ -65,16 +66,15 @@ async def add_ai_fields_async(df, start, card_count):
 
 
 
-def find_duplicate_words(df):
-    dupes = df[df.duplicated(subset=["Word"], keep=False)]
-    return dupes.sort_values("Word")
+
 
 if __name__=="__main__":
 
 
+
     output_df = initialize_global_dataframe()
-    print(find_duplicate_words(output_df))
-    asyncio.run (add_ai_fields_async(output_df, 40, 30))
+
+    asyncio.run(add_ai_fields_async(output_df, 150, 30))
     #add_character_info(output_df)
     output_df.to_csv(config.FIELD_DATA_OUTPUT, index=False, encoding="utf-8-sig")
     print("Data succesfully written!")
