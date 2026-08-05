@@ -7,13 +7,14 @@ import field_generator
 import json
 import config
 import get_char_data
+import misc_functions
 
-def initialize_global_dataframe():
+def initialize_global_dataframe(path = config.ORIGINAL_CARDS_PATH):
     print ("Initializing data frame...")
     #Make copy of original cards.csv as a dataframe file
     global df_cards
     #df_cards = pd.read_csv(config.FIELD_DATA_OUTPUT)
-    df_cards = pd.read_csv(config.ORIGINAL_CARDS_PATH)
+    df_cards = pd.read_csv(path )
     return df_cards
 
 
@@ -39,10 +40,10 @@ async def add_ai_field_batch(df, start, batch_size):
             print(f"WARNING: got rank {index}, not in dataframe — skipping")
             continue
         
-        df.at[index, "meaning"] = item["meaning"]
-        df.at[index, "sentence"] = item["sentence"]
-        df.at[index, "sentence meaning"] = item["sentence_meaning"]
-        df.at[index, "notes"] = item["notes"]
+        df.at[index, "Meaning"] = item["meaning"]
+        df.at[index, "Sentence"] = item["sentence"]
+        df.at[index, "Sentence Meaning"] = item["sentence_meaning"]
+        df.at[index, "Notes"] = item["notes"]
 
 
 #Adds character info
@@ -52,7 +53,27 @@ def add_character_info(df):
         df.at[index, "Character Info"] = get_char_data.word_char_analysis_html(word)
     print("Character info added!")
 
-        
+def add_pinyin_to_notes(df):
+    #Adding pinyin to notes with ruby
+    for index, word in enumerate(df["Word"]):
+        df.at[index, "Notes"] = misc_functions.add_ruby(str(df.at[index, "Notes"]))
+    print("Pinyin added to notes!")
+
+    pass
+
+def add_sentence_pronunciation(df):
+    #Adding pronuncition to notes with ruby
+    for index, word in enumerate(df["Word"]):
+        df.at[index, "Sentence Pronunciation"] = misc_functions.add_ruby(str(df.at[index, "Sentence"]))
+    print("Pinyin added to Sentences!")
+
+    pass
+
+def add_word_pinyin_ruby(df):
+    #Adding pronuncition to notes with ruby
+    for index, word in enumerate(df["Word"]):
+        df.at[index, "Word Ruby"] = misc_functions.add_ruby(str(df.at[index, "Word"]))
+    print("Ruby added to words!")
 
 async def add_ai_fields_async(df, start, card_count):
     """Adds ai fields in batches to the dataframe for all the cards requested in the parameters
@@ -68,14 +89,18 @@ async def add_ai_fields_async(df, start, card_count):
 
 
 
+
 if __name__=="__main__":
 
 
 
-    output_df = initialize_global_dataframe()
+    output_df = initialize_global_dataframe(config.FIELD_DATA_OUTPUT)
 
-    asyncio.run(add_ai_fields_async(output_df, 150, 30))
-    #add_character_info(output_df)
+    asyncio.run(add_ai_fields_async(output_df, 2049, int(4098/2) ))
+    """add_pinyin_to_notes(output_df)
+    add_character_info(output_df)
+    add_sentence_pronunciation(output_df)
+    add_word_pinyin_ruby(output_df)"""
     output_df.to_csv(config.FIELD_DATA_OUTPUT, index=False, encoding="utf-8-sig")
     print("Data succesfully written!")
 

@@ -24,9 +24,12 @@ final_card_count = 20
 
 
 #Technical variable 
-prompt_batch_size = 10
-model="gpt-5"
+prompt_batch_size = 15
+#model="gpt-5.6-sol"
+model="gpt-5.6-terra"
+#reasoning_effort="high"
 reasoning_effort="medium"
+
 
 
 #File loctions
@@ -54,6 +57,8 @@ scaffolding_words =  [
 
 
 #region prompts
+
+
 def system_prompt(core_vocab):
     """Forms system prompt for the OpenAI API request.
     Args:
@@ -111,21 +116,19 @@ SENTENCE COMPLEXITY
     - TEMPORAL CLAUSE (...的时候): 我在中国的时候，认识了他。
   Prefer this level once vocab supports it — don't default back to
   single-clause out of caution.
-- Reserve TWO devices in one sentence for later, and only once each device
-  involved is already well-established individually. Never introduce two
-  new devices at once.
+- Reserve TWO devices in one sentence for the rank ~200+ cards 
   e.g. 他所说的话，我们都不太明白，所以还是再问他一次比较好。
 - An awkward sentence stretching for a device it can't support is worse
   than a clean, simpler one. When in doubt, simplify.
--Use vocabulary from the recent words list when making sentences to reenforce those words for the learner
-
+- Use vocabulary from the recent words list when making sentences to
+  reinforce those words for the learner.
 
 MEANING
 - Give ONE concise, common, modern English gloss (a few words, not a list
   of synonyms). Avoid archaic, overly formal, or region-specific
   translations — write it the way a fluent modern speaker would gloss the
   word for a learner.
-- Words with polysemy must have all their meanings in the gloss
+- Words with polysemy must contain all their meanings in the gloss.
 
 FUNCTION OVER LITERAL GLOSS
 - Some words' literal dictionary gloss doesn't capture their actual
@@ -135,23 +138,50 @@ FUNCTION OVER LITERAL GLOSS
   inserted by default in neutral statements without carrying full
   intensifying force (这很对 usually just means "this is right," not "this
   is VERY right"). When a word's literal gloss would create this kind of
-  false impression, explain the actual function briefly in Notes.
+  false impression, explain the actual function briefly in Notes. Remeber
+  the point is for the learner to know how to use a word from just the card alone.
 
 READINGS
-- Each target word in TARGET_WORDS includes GIVEN_PINYIN: the exact,
-  already-determined reading to use. Your sentence, the word entry's
-  pinyin, and Meaning must all reflect GIVEN_PINYIN — never substitute a
-  different reading or guess a tone.
+- Each target word in TARGET_WORDS includes GIVEN_PINYIN: the reading,
+  generated deterministically via pypinyin (not by you), that tells you
+  which sense of the word is intended at this rank. Use it to identify
+  the correct meaning to teach — GIVEN_PINYIN itself does not need to
+  appear anywhere in your output except as described in the pinyin rule
+  below.
 - Some characters have multiple readings tied to different, unrelated
-  meanings (e.g. 长: cháng "long" vs zhǎng "to grow"; 为: wéi "to act
-  as/become" vs wèi "for/because of"). Identify the SPECIFIC sense that
-  corresponds to GIVEN_PINYIN — not the character's overall most common
-  meaning. A character's most frequent sense is often tied to a DIFFERENT
-  reading than the one you were given; do not default to it.
-- If you're confident the character has another reading with a different
-  meaning, briefly flag it in Notes (e.g. "Also read wèi, meaning 'for;
-  because of'"). Skip this if the character has effectively one reading in
-  modern usage.
+  meanings (e.g. 长: cháng "long" vs zhǎng "to grow"; 还: hái "still/also"
+  vs huán "to return"). Identify the SPECIFIC sense that corresponds to
+  GIVEN_PINYIN — not the character's overall most common meaning. A
+  character's most frequent sense is often tied to a DIFFERENT reading
+  than the one you were given; do not default to it.
+- Before deciding Notes should be empty, explicitly check: does this
+  character have another reading tied to a different, unrelated meaning?
+  If yes, you MUST flag it. This check is easy to skip — treat it as a
+  required step for every target word, not something to mention only
+  when it happens to come to mind.
+- Flag an alternate reading ONLY if that reading applies to THIS SAME
+  single-character word in its own common standalone use — not if the
+  alternate reading only occurs bound inside a different, specific
+  compound elsewhere. Ask: "would a learner ever encounter this same word,
+  used the way it's being taught here, pronounced the other way?" If the
+  honest answer is "only inside one specific other compound," do not flag
+  it.
+- Example of what NOT to flag: 没 (méi, "not/have not") should NOT note
+  "also read mò, meaning submerge" — mò only occurs inside the fixed
+  compound 淹没, never as the standalone word 没 itself. Same logic for 和
+  (hé) and its huó reading, which is locked to 和面 alone.
+- Example of what SHOULD be flagged: 还 (hái "still") correctly notes
+  "also read huán, meaning 'to return'" — huán is a live, common
+  pronunciation of the same standalone word, not one confined to a single
+  fixed compound.
+- Skip this entirely if the character has effectively one reading in
+  modern standalone usage (no other common meaning tied to a different
+  pronunciation of the same word).
+- Pinyin only ever appears in your output when flagging this kind of
+  alternate reading (e.g. "Also read huán, meaning 'to return'"). This is
+  the ONE circumstance where giving pinyin is allowed — never include
+  pinyin for ordinary polysemy examples that share the same reading, or
+  anywhere else.
 
 POLYSEMY (single reading, multiple senses or functions)
 - Distinguish this from the READINGS case above: some words have ONE
@@ -161,23 +191,27 @@ POLYSEMY (single reading, multiple senses or functions)
   a verb).
 - If you mention another sense, you MUST name the concrete trigger for it
   — a grammatical position, what kind of word follows, a specific fixed
-  compound — and include a short Chinese example fragment with pinyin and
+  compound — and include a short Chinese example fragment with a
   gloss demonstrating it. "就 can also mean 'then'" is a violation.
-  "Before a verb, 就 means 'then, right away' — e.g. 他来了就说 (tā lái le
-  jiù shuō) 'as soon as he arrived, he spoke'" is not.
-- Certain high-frequency modal verbs form near-synonym clusters genuinely
-  easy for learners to conflate: 会/能/可以 (learned skill / general
-  capability / permission), 要/想/会 (want / intend / will). When
-  introducing a word from one of these clusters, briefly distinguish it
-  from its cluster-mates. Do NOT invent a comparison between words that
-  merely share a character but function too differently to actually be
-  confused (e.g. 可 the adverb vs 可以 the modal do not need a note just
-  because they share a character).
+  "Before a verb, 就 means 'then, right away' — e.g. 他来了就说 'as soon as he arrived, he spoke'" is not.
+- Before deciding Notes should be empty, explicitly check: is this word
+  part of a near-synonym cluster genuinely easy for a learner to conflate?
+  Named clusters to watch for: 会/能/可以 (learned skill / general
+  capability / permission); 要/想/会 (want / intend / will); 知道/认识/明白
+  (to know a fact or information / to know a person or be familiar with a
+  thing / to understand or realize something). This check is equally
+  required alongside the READINGS check above — do not let one crowd out
+  the other.
+- Do NOT invent a comparison between words that merely share a character
+  but function too differently to actually be confused (e.g. 可 the
+  adverb vs 可以 the modal do not need a note just because they share a
+  character).
 
 NOTES
 - Default to "". Only write Notes for a real grammar point, a genuine
   nuance vs. a similar/cluster-mate word, a reading flag, or a polysemy
-  flag as defined above.
+  flag as defined above. The primary purpose of the notes is to 
+  teach the learner to use the word correctly from just the card alone.
 - Before writing anything, ask: does this teach something the learner
   could not get from Meaning + the sentence alone? If not, leave it "".
   Do not add Notes just to show a second example of the same sense already
@@ -190,13 +224,10 @@ NOTES
 - Be concise — no filler, no restating Meaning, no disclaimers beyond one
   neutral clause if genuinely relevant.
 - Only mention another Chinese word if necessary to make one of the points
-  above — never mention a word solely to cite it. When you do, include its
-  pinyin in parentheses (not the target word's own — that's handled
-  separately).
-  - Notes must always be written in English. Cite Chinese words/phrases inline
-  (with pinyin) as needed, but the explanatory prose itself is English,
-  never Chinese — regardless of the target word or its surrounding content.
-
+  above — never mention a word solely to cite it.
+- Notes must always be written in English. Cite Chinese words/phrases
+  inline as needed, but the explanatory prose itself is English, never
+  Chinese — regardless of the target word or its surrounding content.
 
 DO NOT REFERENCE YOUR OWN INSTRUCTIONS
 - Never mention CORE_VOCAB, RECENT_VOCAB, GIVEN_PINYIN, or any other
@@ -216,13 +247,14 @@ OUTPUT
 -EXAMPLES
 Word,Pronunciation,meaning,sentence,sentence meaning,notes
 1.在,zài,at; in,我在中国。,I am in China.,
-2.就,jiù,precisely; exactly, then, right away,我就是中国人。,I am exactly/indeed Chinese.,"Before a verb, 就 means 'then, right away' — e.g. 他来了就说 ""as soon as he arrived, he spoke""."
+2.就,jiù,precisely; exactly; then; right away,我就是中国人。,I am exactly/indeed Chinese.,"Before a verb, 就 means 'then, right away' — e.g. 他来了就说 ""as soon as he arrived, he spoke""."
 3.长,cháng,long,这条路很长。,This road is very long.,"Also read zhǎng, meaning 'to grow' or 'elder/chief' — e.g. 他长大了 ""he grew up""."
 4.会,huì,can (learned skill); will,他会说中文。,He can speak Chinese.,会 = a learned ability. Different from 能 (general capability) and 可以 (permission).
 5.大,dà,big,苹果很大。,The apple is big.,
 6.被,bèi,passive marker (by),苹果被猫吃了。,The apple got eaten by the cat.,被 often implies something unwanted or unintended happened to the subject.
-7,也,yě,also; too,我也是中国人。,I am also Chinese.
-
+7,也,yě,also; too,我也是中国人。,I am also Chinese.,
+8,没,méi,not; have not,我没去。,I didn't go.,
+9,知道,zhīdào,to know (a fact),我知道。,I know.,知道 is used for facts/information — different from 认识 (to know a person) and 明白 (to understand/realize).
 
 CORE_VOCAB: {core_vocab}
 """
@@ -251,7 +283,6 @@ def get_max_clauses(start, batch_size):
     Returns:
         int: The maximum number of clauses to use in a sentence for the given batch.
     """
-    max_clause = 1 + start//40
 
 #endregion
 

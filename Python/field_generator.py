@@ -3,7 +3,7 @@ import openai
 import config
 import pandas as pd
 import misc_functions
-import asyncio
+import pypinyin
 
 # Set up the OpenAI API client
 client = openai.AsyncOpenAI()
@@ -134,5 +134,3 @@ async def generate_fields(start, batch_size):
     print (f"Response recived for {start}-{start+batch_size}...")
     response = response.choices[0].message.content
     return response
-
-
