@@ -45,6 +45,7 @@ PROMPT_OUTPUT = OUTPUT_DATA_DIR / "prompt_output.txt"
 
 
 
+
 #Languages the user already speaks, where the notes can use those as references in its explinations
 reference_languages = ["English", "Spanish", "French", "Hebrew"]
 

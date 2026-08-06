@@ -94,15 +94,16 @@ if __name__=="__main__":
 
 
 
-    output_df = initialize_global_dataframe(config.FIELD_DATA_OUTPUT)
+    output_df = initialize_global_dataframe(config.INPUT_DATA_DIR / "output_raw.csv")
 
-    asyncio.run(add_ai_fields_async(output_df, 2049, int(4098/2) ))
-    """add_pinyin_to_notes(output_df)
+    #asyncio.run(add_ai_fields_async(output_df, 1, 5 ))
+    add_pinyin_to_notes(output_df)
     add_character_info(output_df)
     add_sentence_pronunciation(output_df)
-    add_word_pinyin_ruby(output_df)"""
-    output_df.to_csv(config.FIELD_DATA_OUTPUT, index=False, encoding="utf-8-sig")
+    add_word_pinyin_ruby(output_df)
+    output_df.to_csv(config.OUTPUT_DATA_DIR / "finished notes.csv", index=False, encoding="utf-8-sig")
     print("Data succesfully written!")
+
 
     pass
 

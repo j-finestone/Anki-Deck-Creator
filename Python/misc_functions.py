@@ -31,7 +31,6 @@ def add_ruby(text):
     """Replace every Hanzi run in a string with ruby-annotated HTML.
     Leaves everything else (English, punctuation) untouched."""
     if not text:
-        return text
+        return ""
     return CJK_PATTERN.sub(lambda m: hanzi_to_ruby(m.group(0)), text)
-
 
