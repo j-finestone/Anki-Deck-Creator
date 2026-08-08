@@ -1,65 +1,57 @@
 from logging import config
 from pathlib import Path
 
-extracted_fields = [
-    "Rank", 
-    "Word", 
-    "Pronunciation"
-    
+
+
+
+#Fields the progrm can create: Meaning/Sentence/Sentence Meaning/Notes, Notes Pinyin, 
+#Character Info, Sentence Pronunciation, Word Ruby
+#Add/Remove fields from this list so the program knows what it should and should not generate
+generated_fields = [
+
+    "Meaning/Sentence/Sentence Meaning/Notes", #REQUIRED. Generates word translation, and example sentence ,and notes on the word
+    "Notes Pinyin", #Adds ruby pinyin for the notes
+    "Character Info", #Adds info on the character from the Makemeahanzi dataset
+    "Sentence Pronunciation", #Adds ruby pinyin field for how to pronunce the sentence
+    "Word Pronunciation" #Adds a field for how to pronunce the word using ruby pinyin
+
 ]
-created_feilds = [
 
-    "Sentence",
-    "Sentence_pronunciation",
-    "Notes",
-    "Character_info",
-    "Pronunciation"
+#Allowed vocabulary for sentence generaation
+core_vocab_length = 150 #How many of the most common words (first cards) so sentences can still use gramatical words even later on)
+recent_vocab_length = 100 #How much of the the words before the current word that the model can use
+scaffolding_words =  [ "猫", "水","苹果","是", "我", "人", "中国"] #Simple, concreate words the user alreaady knows so the earlier sentences have a base vocabulary to work with
 
-]
-
-#parameters
-core_vocab_length = 150
-recent_vocab_length = 100
-final_card_count = 20
 
 
 #Technical variable 
-prompt_batch_size = 15
-#model="gpt-5.6-sol"
-model="gpt-5.6-terra"
-#reasoning_effort="high"
-reasoning_effort="medium"
+prompt_batch_size = 10 #How many cards the AI will generate fields for per prompt
+
+#These settings are currently Cheapest models for testing purposes
+model="gpt-5.6-luna" #The final generation used model="gpt-5.6-terra",
+reasoning_effort="none"#The final generation used reasoning_effort=medium
 
 
 
 #File loctions
 BASE_DIR = Path(__file__).resolve().parent.parent
-INPUT_DATA_DIR = BASE_DIR / "Input Data"
-OUTPUT_DATA_DIR = BASE_DIR / "Output Data"
-ORIGINAL_CARDS_PATH = INPUT_DATA_DIR / "cards.csv"
-FREQUENCY_LIST_PATH = INPUT_DATA_DIR / "raw_frequency_list.csv"
-WORDS_LIST_PATH =  INPUT_DATA_DIR / "words_list.txt"
-CHAR_DICT_PATH = INPUT_DATA_DIR / "dictionary.jsonl"
-FIELD_DATA_OUTPUT = OUTPUT_DATA_DIR / "output.csv"
-PROMPT_OUTPUT = OUTPUT_DATA_DIR / "prompt_output.txt"
+INPUT_DATA_DIR = BASE_DIR / "Input Data" #Directory for "Input Data" folder
+OUTPUT_DATA_DIR = BASE_DIR / "Output Data" #Directory for "Output Data" Folder
+FREQUENCY_LIST_PATH = INPUT_DATA_DIR / "raw_frequency_list.csv" #Used for generating the ORIGINAL_CARDS_OUTPUT file
+ORIGINAL_CARDS_PATH = INPUT_DATA_DIR / "cards.csv" #(The original csv file that can have preloaded data)
+CHAR_DICT_PATH = INPUT_DATA_DIR / "dictionary.jsonl" #Used to reference the bharacter breakdown dataset
+FIELD_DATA_OUTPUT_PATH = OUTPUT_DATA_DIR / "output.csv" #The final output for the generated script.
+PROMPT_OUTPUT_PATH = OUTPUT_DATA_DIR / "prompt_output.txt" #The output of the prompt the system generated. Useful for debuging
+FINAL_OUTPUT = OUTPUT_DATA_DIR / "Final Output.csv" #The final csv output file generated
 
 
 
-
-#Languages the user already speaks, where the notes can use those as references in its explinations
-reference_languages = ["English", "Spanish", "French", "Hebrew"]
-
-scaffolding_words =  [
-    "猫", "水","苹果","是", "我", "人", "中国"
-]
 
 
 
 
 
 #region prompts
-
-
 def system_prompt(core_vocab):
     """Forms system prompt for the OpenAI API request.
     Args:
@@ -194,7 +186,8 @@ POLYSEMY (single reading, multiple senses or functions)
   — a grammatical position, what kind of word follows, a specific fixed
   compound — and include a short Chinese example fragment with a
   gloss demonstrating it. "就 can also mean 'then'" is a violation.
-  "Before a verb, 就 means 'then, right away' — e.g. 他来了就说 'as soon as he arrived, he spoke'" is not.
+  "Before a verb, 就 means 'then, right away' — e.g. 他来了就说 'as soon 
+  as he arrived, he spoke'" is not.
 - Before deciding Notes should be empty, explicitly check: is this word
   part of a near-synonym cluster genuinely easy for a learner to conflate?
   Named clusters to watch for: 会/能/可以 (learned skill / general
@@ -265,25 +258,8 @@ def user_prompt (target_words, recent_vocab, max_clauses=2):
     user_prompt = f"""
     RECENT_VOCAB: \n {recent_vocab}
     TARGET_WORDS: \n {target_words}"""
-
-    
-    #MAX_CLAUSES: {max_clauses}"""
-    
-
-
     
     return user_prompt
-
-
-def get_max_clauses(start, batch_size):
-    """Returns the maximum number of clauses to use in a sentence for a given batch of cards using a formula .
-    Args:
-        start (int): The starting index of the batch.
-        batch_size (int): The size of the batch.
-        
-    Returns:
-        int: The maximum number of clauses to use in a sentence for the given batch.
-    """
 
 #endregion
 

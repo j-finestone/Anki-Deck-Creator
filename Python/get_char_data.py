@@ -52,9 +52,9 @@ def char_info_to_html(char_info):
     #Turn radical into a string to make it more readable 
     if pinyin is not None:
         pinyin = ", ".join(pinyin)
+        
 
     #Get etomology subfields if existing 
-
     #Initialize etymology variables as none to avoid reference errors
     etymology_type = None
     hint = None

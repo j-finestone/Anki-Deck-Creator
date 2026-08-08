@@ -1,9 +1,8 @@
-#Generate sentance using OpenAI's API.
+#Generate sentance and notes using OpenAI's API.
 import openai
 import config
 import pandas as pd
 import misc_functions
-import pypinyin
 
 # Set up the OpenAI API client
 client = openai.AsyncOpenAI()
@@ -46,7 +45,6 @@ def generate_prompts (start, batch_size):
     #Target Words
     target_words = misc_functions.df_to_txt(words, start, end_of_batch)
  
-
 
     #Get recent vocab
     if end_of_batch < config.recent_vocab_length:

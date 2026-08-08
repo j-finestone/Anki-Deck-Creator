@@ -90,19 +90,31 @@ async def add_ai_fields_async(df, start, card_count):
 
 
 
-if __name__=="__main__":
+def genarate_fields(start, amount):
+    """Generates all the fields that were in config.generated_fields. """
 
+    #Initialize Pandas dataframe that will become the output
+    output_df = initialize_global_dataframe(config.ORIGINAL_CARDS_PATH)
 
+    if ("Meaning/Sentence/Sentence Meaning/Notes" in config.generated_fields):
+        asyncio.run(add_ai_fields_async(output_df, start, amount ))
+    else:
+        raise Exception ("Must generate AI fields to run program")
 
-    output_df = initialize_global_dataframe(config.INPUT_DATA_DIR / "output_raw.csv")
+    if "Notes Pinyin" in config.generated_fields:
+        add_pinyin_to_notes(output_df)
+    if "Character Info" in config.generated_fields:
+        add_character_info(output_df)
+    if "Sentence Pronunciation" in config.generated_fields:
+        add_sentence_pronunciation(output_df)
+    
+    if "Word Pronunciation" in config.generated_fields:
+        add_word_pinyin_ruby(output_df)
 
-    #asyncio.run(add_ai_fields_async(output_df, 1, 5 ))
-    add_pinyin_to_notes(output_df)
-    add_character_info(output_df)
-    add_sentence_pronunciation(output_df)
-    add_word_pinyin_ruby(output_df)
+    #Save result to CSV
     output_df.to_csv(config.OUTPUT_DATA_DIR / "finished notes.csv", index=False, encoding="utf-8-sig")
     print("Data succesfully written!")
+
 
 
     pass

@@ -2,10 +2,9 @@ import config
 import re
 from pypinyin import lazy_pinyin, Style
 
-
+#Convert the data frame gathered from the cards to a string. Used to add allowed words to prompt
 def df_to_txt(df, start, end):
     output_df = df.iloc[start:end]
-    feilds = config.extracted_fields
     
     output = "\n".join(
     f"{row.Rank}|{row.Word}|{row.Pronunciation}" 

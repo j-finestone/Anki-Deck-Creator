@@ -2,7 +2,8 @@ import genanki
 import pandas
 import config
 
-#Create Model (Defining the structure of the notes)
+"""THIS FILE IS KEPT FOR LEGECY PURPOSES. IT IS BEST TO IMPORT THE CVS FILE TO ANKI DIRECTLY"""
+#Create Model (Defining the structure of the notes) 
 def create_final_file(source_csv):
     print ("Creating model")
     model = genanki.Model(
