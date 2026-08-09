@@ -1,6 +1,10 @@
 import table_generator
+import parse_card_data
 
 if __name__ == "__main__":
+
+    #Execute this function to create a cards.csv file from a raw_frequency_list.csv file
+    parse_card_data.generate_card_data()
 
     #Change start and amount to input how many words should fields be generated for. 
     #HIGHLY RECOMENDED TO START SMALL AS A SAMPLE BATCH

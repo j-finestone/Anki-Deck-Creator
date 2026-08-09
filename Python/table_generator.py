@@ -103,16 +103,17 @@ def genarate_fields(start, amount):
 
     if "Notes Pinyin" in config.generated_fields:
         add_pinyin_to_notes(output_df)
-    if "Character Info" in config.generated_fields:
-        add_character_info(output_df)
+
     if "Sentence Pronunciation" in config.generated_fields:
         add_sentence_pronunciation(output_df)
     
     if "Word Pronunciation" in config.generated_fields:
         add_word_pinyin_ruby(output_df)
 
+    if "Character Info" in config.generated_fields:
+        add_character_info(output_df)
     #Save result to CSV
-    output_df.to_csv(config.OUTPUT_DATA_DIR / "finished notes.csv", index=False, encoding="utf-8-sig")
+    output_df.to_csv(config.FINAL_OUTPUT, index=False, encoding="utf-8-sig")
     print("Data succesfully written!")
 
 
