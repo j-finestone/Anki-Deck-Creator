@@ -85,7 +85,8 @@ time creating architecture to extract the low quality data.
   - The program outputs a CSV file named “Final Output.csv”,with the data, and can be imported directly into Anki
 
 ## Get the Prebuilt Deck
-Download the pregenerated .APKG file under “Pregenerated Outputs/Jordan’s Mandarin Vocab.apkg”
+ -  Download the pregenerated .APKG file under “Pregenerated Outputs/Jordan’s Mandarin Vocab.apkg”
+ -  If the english to mandarin template is not showing up, select all cards, and select reposition with the defult settings
 
 ## Tech Stack
  hyperTTS, Genanki, pandas, pypinyin, Python
