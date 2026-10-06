@@ -57,12 +57,10 @@ def generate_prompts (start, batch_size):
         recent_vocab = misc_functions.df_to_txt(words, end_of_batch-config.recent_vocab_length, start-1)
 
 
-    max_clauses = 2
-
 
     
     system_prompt = config.system_prompt(core_vocab)
-    user_prompt = config.user_prompt(target_words, recent_vocab, max_clauses)
+    user_prompt = config.user_prompt(target_words, recent_vocab)
 
     return {"system_prompt": system_prompt, "user_prompt":user_prompt}
 

@@ -78,7 +78,7 @@ def add_word_pinyin_ruby(df):
 async def add_ai_fields_async(df, start, card_count):
     """Adds ai fields in batches to the dataframe for all the cards requested in the parameters
     Start at 0"""
-    print (f"Adding fields for {start}-{card_count} in batches")
+    print (f"Adding fields for {start}-{start+card_count} in batches")
     tasks = []
     for card_index in range (start, start+card_count, config.prompt_batch_size):
         tasks.append(add_ai_field_batch (df, card_index, config.prompt_batch_size))

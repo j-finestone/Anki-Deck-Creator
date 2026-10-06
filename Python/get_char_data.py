@@ -46,7 +46,7 @@ def char_info_to_html(char_info):
     #Isolate character data to variables 
     character = char_info.get("character")
     pinyin = char_info.get("pinyin")
-    meaning = char_info.get("meaning")
+    meaning = char_info.get("definition")
     radical = char_info.get("radical")
 
     #Turn radical into a string to make it more readable 
